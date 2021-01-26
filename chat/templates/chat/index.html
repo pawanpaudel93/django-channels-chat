@@ -1,26 +1,64 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8"/>
-    <title>Chat Rooms</title>
-</head>
-<body>
-    What chat room would you like to enter?<br>
-    <input id="room-name-input" type="text" size="100"><br>
-    <input id="room-name-submit" type="button" value="Enter">
+{% extends 'base.html' %}
 
-    <script>
-        document.querySelector('#room-name-input').focus();
-        document.querySelector('#room-name-input').onkeyup = function(e) {
-            if (e.keyCode === 13) {  // enter, return
-                document.querySelector('#room-name-submit').click();
-            }
-        };
+{% block title %}Chat Rooms{% endblock %}
 
-        document.querySelector('#room-name-submit').onclick = function(e) {
-            var roomName = document.querySelector('#room-name-input').value;
-            window.location.pathname = '/chat/' + roomName + '/';
-        };
-    </script>
-</body>
-</html>
+{% block content %}
+  <p>What chat room would you like to enter?</p>
+  <v-form ref="form" lazy-validation @submit.prevent="enterRoom">
+    <v-text-field
+      v-model="roomName"
+      :error-messages="roomErrors"
+      label="Chat Room Name"
+      outlined
+    ></v-text-field>
+    <v-text-field
+      v-model="username"
+      label="username"
+      outlined
+    ></v-text-field>
+    <div class="text-center">
+      <v-btn
+        type="submit"
+        class="ma-2"
+        outlined
+        color="primary"
+      >
+        Enter
+      </v-btn>
+    </div>
+  </v-form>
+{% endblock %}
+
+{% block script %}
+  <script>
+    new Vue({
+      el: '#app',
+      vuetify: new Vuetify(),
+      data() {
+        return {
+          roomName: '',
+          username: "User_" + Date.now(),
+          clickedButton: false,
+        }
+      },
+      methods: {
+        enterRoom() {
+          this.clickedButton = true;
+          if (this.roomName) {
+            localStorage.setItem('username', this.username);
+            window.location.pathname = '/chat/' + this.roomName + '/';
+          }
+        }
+      },
+      computed: {
+        roomErrors() {
+          const errors = [];
+          if (this.clickedButton && !this.roomName) {
+            errors.push("Room Name is required!")
+          }
+          return errors
+        }
+      }
+    })
+  </script>
+{% endblock %}

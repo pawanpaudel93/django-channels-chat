@@ -1,50 +1,89 @@
-<!-- chat/templates/chat/room.html -->
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8"/>
-    <title>Chat Room</title>
-</head>
-<body>
-    <textarea id="chat-log" cols="100" rows="20"></textarea><br>
-    <input id="chat-message-input" type="text" size="100"><br>
-    <input id="chat-message-submit" type="button" value="Send">
-    {{ room_name|json_script:"room-name" }}
-    <script>
-        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+{% extends 'base.html' %}
 
-        const chatSocket = new WebSocket(
-            'ws://'
-            + window.location.host
-            + '/ws/chat/'
-            + roomName
-            + '/'
+{% block title %}Chat Room{% endblock %}
+
+{% block content %}
+  <v-card v-chat-scroll class="overflow-y-auto mt-10" style="height: 60vh;">
+    <v-toolbar
+      color="primary lighten-1"
+      dark
+    >
+      <v-toolbar-title>{{room_name}}</v-toolbar-title>
+    </v-toolbar>
+
+    <v-list one-line v-chat-scroll>
+      <template v-for="(item, index) in messages">
+        <v-list-item
+          :key="index"
+          ripple
+        >
+          <v-list-item-content>
+            <v-list-item-title v-html="'<b>' + item.username +'</b>: ' +item.message"></v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-divider></v-divider>
+      </template>
+    </v-list>
+  </v-card>
+
+  <v-form ref="form" lazy-validation @submit.prevent="sendMessage">
+    <v-text-field
+      v-model="message"
+      :append-outer-icon="message ? 'mdi-send' : ''"
+      filled
+      clear-icon="mdi-close-circle"
+      clearable
+      label="Message"
+      type="text"
+      @click:append-outer="sendMessage"
+      @click:clear="clearMessage"
+    ></v-text-field>
+  </v-form>
+{% endblock %}
+
+{% block script%}
+  <script>
+    window.Vue = new Vue({
+      el: '#app',
+      vuetify: new Vuetify(),
+      delimiters: ['[[', ']]'],
+      data: () => ({
+        message: '',
+        messages: [],
+        messagesocket: null,
+      }),
+
+      methods: {
+        sendMessage () {
+          this.messagesocket.send(JSON.stringify({
+            'username': localStorage.getItem('username') !== null? localStorage.getItem('username'): "User_" + Date.now(),
+            'message': this.message
+          }));
+          this.clearMessage()
+        },
+        clearMessage () {
+          this.message = ''
+        },
+      },
+      created() {
+        let self = this;
+        self.messagesocket = new WebSocket(
+          'ws://'
+          + window.location.host
+          + '/ws/chat/'
+          + "{{room_name}}"
+          + '/'
         );
-
-        chatSocket.onmessage = function(e) {
-            const data = JSON.parse(e.data);
-            document.querySelector('#chat-log').value += (data.message + '\n');
+        
+        self.messagesocket.onmessage = function(e) {
+          const data = JSON.parse(e.data);
+          self.messages.push(data);
         };
 
-        chatSocket.onclose = function(e) {
-            console.error('Chat socket closed unexpectedly');
+        self.messagesocket.onclose = function(e) {
+          console.error('Chat socket closed unexpectedly');
         };
-
-        document.querySelector('#chat-message-input').focus();
-        document.querySelector('#chat-message-input').onkeyup = function(e) {
-            if (e.keyCode === 13) {  // enter, return
-                document.querySelector('#chat-message-submit').click();
-            }
-        };
-
-        document.querySelector('#chat-message-submit').onclick = function(e) {
-            const messageInputDom = document.querySelector('#chat-message-input');
-            const message = messageInputDom.value;
-            chatSocket.send(JSON.stringify({
-                'message': message
-            }));
-            messageInputDom.value = '';
-        };
-    </script>
-</body>
-</html>
+      }
+    })
+  </script
+{% endblock %}
