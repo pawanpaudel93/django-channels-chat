@@ -1,0 +1,17 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+selenium = "*"
+
+[packages]
+channels = "*"
+django = "*"
+channels-redis = "*"
+python-decouple = "*"
+dj-database-url = "*"
+
+[requires]
+python_version = "3.6"
