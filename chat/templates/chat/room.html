@@ -1,29 +1,46 @@
 {% extends 'base.html' %}
 
-{% block title %}Chat Room{% endblock %}
+{% block title %}{{room_name}}{% endblock %}
 
 {% block content %}
-  <v-card v-chat-scroll class="overflow-y-auto mt-10" style="height: 60vh;">
-    <v-toolbar
+  <v-card class="overflow-hidden">
+    <v-app-bar
       color="primary lighten-1"
+      absolute
+      elevate-on-scroll
+      scroll-target="#scrolling-techniques-7"
       dark
     >
       <v-toolbar-title>{{room_name}}</v-toolbar-title>
-    </v-toolbar>
-
-    <v-list one-line v-chat-scroll>
-      <template v-for="(item, index) in messages">
-        <v-list-item
-          :key="index"
-          ripple
-        >
-          <v-list-item-content>
-            <v-list-item-title v-html="'<b>' + item.username +'</b>: ' +item.message"></v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-divider></v-divider>
-      </template>
-    </v-list>
+      <v-spacer></v-spacer>
+      <v-btn
+        @click="cancelJoin"
+      >
+        Leave Room
+      </v-btn>
+    </v-app-bar>
+    <v-sheet
+      v-chat-scroll
+      id="scrolling-techniques-7"
+      class="overflow-y-auto mt-10"
+      max-height="600"
+    >
+      <v-container style="height: 60vh;">
+        <v-list two-line>
+          <template v-for="(item, index) in messages">
+            <v-list-item
+              :key="index"
+              ripple
+            >
+              <v-list-item-content>
+                <v-list-item-title class="text-wrap" v-html="'<b>' + item.username +'</b>: ' +item.message"></v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider></v-divider>
+          </template>
+        </v-list>
+      </v-container>
+    </v-sheet>
   </v-card>
 
   <v-form ref="form" lazy-validation @submit.prevent="sendMessage">
@@ -39,6 +56,56 @@
       @click:clear="clearMessage"
     ></v-text-field>
   </v-form>
+  <v-dialog
+    v-model="dialog"
+    persistent
+    max-width="600px"
+  >
+    <v-card>
+      <v-card-title>
+        <span class="headline">Join room {{room_name}}</span>
+      </v-card-title>
+      <v-form ref="form" lazy-validation @submit.prevent="dialog = false">
+        <v-card-text>
+          <v-container>
+            <v-text-field
+              v-model="username"
+              label="Username"
+              required
+            ></v-text-field>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="blue darken-1"
+            text
+            @click="cancelJoin"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="blue darken-1"
+            text
+            @click="dialog = false"
+          >
+            Join
+          </v-btn>
+        </v-card-actions>
+      </v-form>
+    </v-card>
+  </v-dialog>
+  <v-textarea
+    id="roomLink"
+    v-model="link"
+    class="mx-2"
+    label="Copy room link"
+    rows="1"
+    prepend-icon="mdi-link"
+    append-outer-icon="mdi-content-copy"
+    @click:append-outer="copyLink"
+  ></v-textarea>
+  <p v-if="isCopied">Room link copied successfully!</p>
 {% endblock %}
 
 {% block script%}
@@ -51,18 +118,40 @@
         message: '',
         messages: [],
         messagesocket: null,
+        dialog: true,
+        isCopied: false,
+        link: window.location,
+        username: localStorage.getItem('username') !== null? localStorage.getItem('username'): "User_" + Date.now(),
       }),
 
       methods: {
         sendMessage () {
           this.messagesocket.send(JSON.stringify({
-            'username': localStorage.getItem('username') !== null? localStorage.getItem('username'): "User_" + Date.now(),
+            'username': this.username,
             'message': this.message
           }));
           this.clearMessage()
         },
         clearMessage () {
           this.message = ''
+        },
+        cancelJoin() {
+          this.dialog = false
+          window.location.pathname = '/'
+        },
+        copyLink() {
+          var copyText = document.getElementById("roomLink");
+
+          /* Select the text field */
+          copyText.select();
+          copyText.setSelectionRange(0, 99999); /* For mobile devices */
+
+          /* Copy the text inside the text field */
+          document.execCommand("copy");
+          this.isCopied = true;
+          setTimeout(()=>{
+            this.isCopied = false;
+          }, 5000)
         },
       },
       created() {
@@ -83,7 +172,7 @@
         self.messagesocket.onclose = function(e) {
           console.error('Chat socket closed unexpectedly');
         };
-      }
+      },
     })
   </script
 {% endblock %}
