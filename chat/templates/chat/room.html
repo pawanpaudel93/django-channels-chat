@@ -156,8 +156,9 @@
       },
       created() {
         let self = this;
+        let scheme = window.location.protocol == "https:" ? "wss://" : "ws://";
         self.messagesocket = new WebSocket(
-          'ws://'
+          scheme
           + window.location.host
           + '/ws/chat/'
           + "{{room_name}}"
