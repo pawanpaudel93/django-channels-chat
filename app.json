@@ -16,7 +16,7 @@
       },
       "DEBUG": {
           "description": "DEBUG",
-          "value": "true"
+          "value": "false"
       },
       "ALLOWED_HOSTS": {
           "description": "Allowed hosts",
