@@ -8,12 +8,13 @@ selenium = "*"
 
 [packages]
 channels = "*"
-django = "*"
+django = "==3.0.0"
 channels-redis = "*"
 python-decouple = "*"
 dj-database-url = "*"
 daphne = "*"
 psycopg2-binary = "*"
+twisted = {extras = ["http2", "tls"],version = "*"}
 
 [requires]
 python_version = "3.6"
