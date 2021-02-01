@@ -1,0 +1,34 @@
+{
+    "name": "django-channels-chat",
+    "description": "Django Channels Chat",
+    "repository": "https://github.com/pawanpaudel93/django-channels-chat",
+    "logo": "",
+    "keywords": ["django", "channels", "chat"],
+    "buildpacks": [
+      {
+        "url": "heroku/python"
+      }
+    ],
+    "env": {
+      "SECRET_KEY": {
+          "description": "Django secret key",
+          "generator": "secret"
+      },
+      "DEBUG": {
+          "description": "DEBUG",
+          "value": "true"
+      },
+      "ALLOWED_HOSTS": {
+          "description": "Allowed hosts",
+         "value": ".localhost, .herokuapp.com"
+      },
+  },
+  "addons": [
+    {
+      "plan": "heroku-redis",
+    },
+    {
+      "plan": "heroku-postgresql",
+    }
+  ]
+}

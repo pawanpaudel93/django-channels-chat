@@ -12,6 +12,7 @@ django = "*"
 channels-redis = "*"
 python-decouple = "*"
 dj-database-url = "*"
+daphne = "*"
 
 [requires]
 python_version = "3.6"
