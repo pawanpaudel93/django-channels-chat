@@ -13,8 +13,8 @@ channels-redis = "*"
 python-decouple = "*"
 dj-database-url = "*"
 daphne = "*"
-psycopg2-binary = "*"
 twisted = {extras = ["http2", "tls"],version = "*"}
+psycopg2-binary = "*"
 
 [requires]
 python_version = "3.6"
